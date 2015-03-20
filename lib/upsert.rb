@@ -8,13 +8,14 @@ require 'upsert/connection'
 require 'upsert/merge_function'
 require 'upsert/column_definition'
 require 'upsert/row'
+require 'upsert/raw_sql'
 
 class Upsert
   class << self
     # What logger to use.
     # @return [#info,#warn,#debug]
     attr_writer :logger
-    
+
     # The current logger
     # @return [#info,#warn,#debug]
     def logger
@@ -34,6 +35,10 @@ class Upsert
           my_logger
         end
       end
+    end
+
+    def sql(sql_query)
+      Upsert::RawSql.new sql_query
     end
 
     # @param [Mysql2::Client,Sqlite3::Database,PG::Connection,#metal] connection A supported database connection.
@@ -223,10 +228,10 @@ class Upsert
   def clear_database_functions
     merge_function_class.clear connection
   end
-  
+
   def merge_function(row)
     cache_key = [row.selector.keys, row.setter.keys]
-    @merge_function_cache[cache_key] ||= merge_function_class.new(self, row.selector.keys, row.setter.keys, assume_function_exists?)
+    @merge_function_cache[cache_key] ||= merge_function_class.new(self, row.selector, row.setter, assume_function_exists?)
   end
 
   # @private

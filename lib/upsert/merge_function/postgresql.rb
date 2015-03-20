@@ -42,9 +42,17 @@ class Upsert
 
       def sql
         @sql ||= begin
-          bind_params = Array.new(selector_keys.length + setter_keys.length, '?') + Array.new(hstore_delete_handlers.length, '?::text[]')
+          selector_ary = selector.map { |name, value| value.is_a?(Upsert::RawSql) ? value.to_sql : '?' }
+          setter_ary = setter.map { |name, value| value.is_a?(Upsert::RawSql) ? value.to_sql : '?' }
+
+          bind_params = selector_ary + setter_ary + Array.new(hstore_delete_handlers.length, '?::text[]')
+          # bind_params = Array.new(selector_keys.length + setter_keys.length, '?') + Array.new(hstore_delete_handlers.length, '?::text[]')
           %{SELECT #{name}(#{bind_params.join(', ')})}
         end
+
+        p @sql
+
+        @sql
       end
 
       class HstoreDeleteHandler

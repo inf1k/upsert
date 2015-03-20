@@ -31,10 +31,15 @@ class Upsert
     attr_reader :selector_keys
     attr_reader :setter_keys
 
-    def initialize(controller, selector_keys, setter_keys, assume_function_exists)
+    attr_reader :selector
+    attr_reader :setter
+
+    def initialize(controller, selector, setter, assume_function_exists)
       @controller = controller
-      @selector_keys = selector_keys
-      @setter_keys = setter_keys
+      @selector = selector
+      @setter = setter
+      @selector_keys = selector.keys
+      @setter_keys = setter.keys
       validate!
       create! unless assume_function_exists
     end
